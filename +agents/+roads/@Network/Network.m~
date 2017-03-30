@@ -1,4 +1,4 @@
-classdef Network < handle
+classdef Network < agents.base.SimpleAgent;
 	%NETWORK Summary of this class goes here
 	%   Detailed explanation goes here
 	
@@ -39,33 +39,93 @@ classdef Network < handle
 			end
 			connectors{end + 1} = to;
 			
+			lastRoad1 = [];
+			lastRoad2 = [];
+			
 			for i = 1:(numel(connectors) - 1)
 				connector1 = connectors{i};
 				connector2 = connectors{i + 1};
+				
+				% Connect roads
 				road1 = agents.roads.RoadElement(connector1, connector2);
 				road2 = agents.roads.RoadElement(connector2, connector1);
+				obj.instance.addCallee(road1);
+				obj.instance.addCallee(road2);
+				
+				% Make sure connectors are linked
+				if isa(connector1, 'agents.roads.Connector')
+					
+				if (i < (numel(connectors) - 1))
+					if ~isempty(lastRoad1)
+						connector1.addConnection(lastRoad1, road1);
+					end
+					if ~isempty(lastRoad2)
+						connector2.addConnection(road2, lastRoad2);
+					end
+				end
+				lastRoad1 = road1;
+				lastRoad2 = road2;
 				
 				
+				% Add roads
 				obj.roads{end + 1} = road1;
 				obj.roads{end + 1} = road2;
 			end
 			
 		end
 		
+		function pathIdList = findPath(obj, from, to)
+			
+			% Djikstra algorithm for finding the shortest path between two
+			% connectors
+			q = util.PQ2;
+			path = util.PQ2;
+			
+			currAgent = from; % Starting point
+			currAgent.cost = 0;
+			while (currAgent.id ~= to.id)
+				% Push connections to the stack with their cost
+				nextList = currAgent.to.getConnections();
+				for i = 1:numel(nextList)
+					next = nextList{i};
+					% Allow next destinations be either roads or
+					% destination
+					if isa(next, 'agents.roads.RoadElement') || (next.id == to.id)
+						next.cost = currAgent.cost + next.getLength() / next.maxSpeed; % Time to traverse, need to integrate traffic level
+						q.push(next, next.cost);
+					end
+						
+				end
+				
+				% Select the next element and push the current agent to the
+				% path stack
+				path.push(currAgent, currAgent.cost);
+				currAgent = q.pop();
+			end
+			% Reached destination, push to path stack for completion
+			path.push(currAgent, currAgent.cost);
+			
+			% Return the id list of the path
+			pathIdList = [];
+			pathIdList(end + 1) = path.pop();
+			while (pathIdList(end) ~= to.id)
+				pathIdList(end + 1) = path.pop();
+			end
+		end
+		
+		function plotPath(obj, pathIdList, figHandle)
+			figure(figHandle);
+			for i = 1:numel(pathIdList)
+				
+			end
+		end
+		
 		function plot(obj)
 			
-			plotSpacing = 0.01;
 			figure;
 			hold on;
 			for i = 1:numel(obj.roads)
-				from = obj.roads{i}.from.location;
-				to = obj.roads{i}.to.location;
-				angle = atan2(to.y - from.y, to.x - from.x);
-				from.x = from.x + sin(angle) * plotSpacing;
-				from.y = from.y + cos(angle) * plotSpacing;
-				to.x = to.x + sin(angle) * plotSpacing;
-				to.y = to.y + cos(angle) * plotSpacing;
-				quiver(from.x, from.y, to.x - from.x, to.y - from.y, 0, 'k', 'MaxHeadSize', 0.4);
+				obj.roads{i}.plot();
 			end
 		end
 		

@@ -8,10 +8,10 @@ classdef PQ2 < handle
     end
 
     methods
-        function thePQueue = PQ2()
+        function thePQueue = PQ2(size)
             thePQueue.nElements = 0;
-            thePQueue.priorityList = NaN*ones(500,1);
-            thePQueue.valueList{500} = [];
+            thePQueue.priorityList = NaN*ones(size,1);
+            thePQueue.valueList{size} = [];
 
             thePQueue.indx = 1;
             thePQueue.nElements = 0;

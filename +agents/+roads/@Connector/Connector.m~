@@ -33,27 +33,9 @@ classdef Connector < agents.roads.Element
 				allKeys = obj.connectionMap.keys;
 				to = {};
 				for i = 1:numel(allKeys)
-					outputs = obj.connectionMap(allKeys{i});
-					for j = 1:numel(outputs)
-						if ~isempty(to)
-							isInList = 0;
-							for k = 1:numel(to)
-								if (to{k}.id == outputs{j}.id)
-									isInList = 1;
-									break;
-								end
-							end
-							
-							if ~isInList
-								to{end + 1} = outputs{j};
-							end
-						else
-							to{end + 1} = outputs{j};
-						end
-					end
+					nextAgent = 
 				end
 			else
-				from = varargin{1};
 				if obj.connectionMap.isKey(from.id)
 					to = obj.connectionMap(from.id);
 				else

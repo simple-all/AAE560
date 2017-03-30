@@ -13,7 +13,7 @@ classdef Instance < handle
 		
 		function obj = Instance()
 			obj.calleeMap = containers.Map('KeyType', 'int32', 'ValueType', 'any');
-			obj.callStack = util.PQ2();
+			obj.callStack = util.PQ2(1);
 		end
 		
 		% Add an agent to the sim
@@ -25,10 +25,18 @@ classdef Instance < handle
 			agent.init(); % Initialize
 		end
 		
+		function callee = getCallee(obj, id)
+			if obj.calleeMap.isKey(id)
+				callee = obj.calleeMap(id);
+			else
+				callee = {};
+			end
+		end
+		
 		function runSim(obj, endTime)
 			% Simulate agents from start to end time
 			obj.currentTime = 0;
-			while (q.nElements > 0) && (obj.currentTime <= endTime)
+			while (obj.callStack.nElements > 0) && (obj.currentTime <= endTime)
 				% Get next agent and run
 				[agentIdx, time] = obj.callStack.pop();
 				obj.currentTime = time;

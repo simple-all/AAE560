@@ -4,12 +4,12 @@ simInst = sim.Instance();
 
 close all;
 
-x = 1:5;
-y = 1:5;
+x = 1:10;
+y = 1:10;
 
 [X, Y] = meshgrid(x, y);
 
-trafficGrid = agents.roads.Network(0.25);
+trafficGrid = agents.roads.Network(0.5);
 simInst.addCallee(trafficGrid);
 
 for i = 1:numel(X)
@@ -31,10 +31,9 @@ end
 
 simInst.runSim();
 
-path = trafficGrid.findPath(trafficGrid.intersections{1}, trafficGrid.roads{end - 5}, 0);
+path = trafficGrid.findPath(trafficGrid.intersections{1}, trafficGrid.roads{315});
 disp('Plotting');
 fig = trafficGrid.plot();
-hold on;
 trafficGrid.plotPath(path, fig);
 
 
