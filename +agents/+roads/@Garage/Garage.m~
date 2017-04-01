@@ -39,11 +39,11 @@ classdef Garage < agents.roads.Element
 					fdy = temp.to.location.y - temp.from.location.y;
 					
 					% Get if the garage is on the right or left hand side
-					side = sign(-fdx * (obj.location.y - temp.from.location.y) - -fdy * (obj.location.x - temp.from.location.x));
+					side = sign(fdx * (obj.location.y - 
 					
 					% Get angle
 					angle = atan2d(dy - fdy, dx - fdx);
-					if (side > 0) || flag
+					if (angle > 0) || flag
 						% Right hand turn, connect
 						obj.connector.addConnection(temp, obj);
 						obj.connector.addConnection(obj, obj.connector.getConnections(temp));

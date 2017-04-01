@@ -20,7 +20,11 @@ classdef Connector < agents.roads.Element
 		function addConnection(obj, from, to)
 			if obj.connectionMap.isKey(from.id)
 				temp = obj.connectionMap(from.id);
-				obj.connectionMap(from.id) = {temp{:}, to};
+				if isa(to, 'cell')
+					
+				else
+					obj.connectionMap(from.id) = {temp{:}, to};
+				end
 			else
 				obj.connectionMap(from.id) = {to};
 			end
@@ -33,9 +37,27 @@ classdef Connector < agents.roads.Element
 				allKeys = obj.connectionMap.keys;
 				to = {};
 				for i = 1:numel(allKeys)
-					nextAgent = 
+					outputs = obj.connectionMap(allKeys{i});
+					for j = 1:numel(outputs)
+						if ~isempty(to)
+							isInList = 0;
+							for k = 1:numel(to)
+								if (to{k}.id == outputs{j}.id)
+									isInList = 1;
+									break;
+								end
+							end
+							
+							if ~isInList
+								to{end + 1} = outputs{j};
+							end
+						else
+							to{end + 1} = outputs{j};
+						end
+					end
 				end
 			else
+				from = varargin{1};
 				if obj.connectionMap.isKey(from.id)
 					to = obj.connectionMap(from.id);
 				else

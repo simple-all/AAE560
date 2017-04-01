@@ -6,6 +6,7 @@ classdef Network < agents.base.SimpleAgent;
 		roads = {};
 		garages = {};
 		intersections = {};
+		connectors = {};
 		maxElementLength;
 	end
 	
@@ -15,9 +16,16 @@ classdef Network < agents.base.SimpleAgent;
 			obj.maxElementLength = maxElementLength;
 		end
 		
-		function addGarage(obj, location)
-			garage = agents.roads.Garage(location);
+		function addGarage(obj, location, numSpaces)
+			
+			% Get the nearest connector
+			connector = obj.findClosestConnector(location);
+			
+			% Create the garage
+			garage = agents.roads.Garage(location, connector, numSpaces);
 			obj.garages{end + 1} = garage;
+			obj.instance.addCallee(garage);
+			garage.connect();
 		end
 		
 		function addIntersection(obj, location)
@@ -31,12 +39,14 @@ classdef Network < agents.base.SimpleAgent;
 			dy = to.location.y - from.location.y;
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
+			
 			% Create connectors 
 			connectors{1} = from;
 			for i = 1:(numElements - 1)
 				location.x = from.location.x + (dx * i / numElements);
 				location.y = from.location.y + (dy * i / numElements);
 				connectors{i + 1} = agents.roads.Connector(location);
+				obj.connectors{end + 1} = connectors{end};
 			end
 			connectors{end + 1} = to;
 			
@@ -85,7 +95,7 @@ classdef Network < agents.base.SimpleAgent;
 			
 		end
 		
-		function pathIdList = findPath(obj, from, to, showPlot)
+		function [pathIdList, cost] = findPath(obj, from, to, showPlot)
 			if (nargin < 4)
 				showPlot = 0;
 			end
@@ -94,7 +104,7 @@ classdef Network < agents.base.SimpleAgent;
 			if showPlot
 				figure;
 				hold on;
-				from.plot('b');
+				from.plot('g');
 				to.plot('r');
 				axis equal;
 			end
@@ -115,7 +125,7 @@ classdef Network < agents.base.SimpleAgent;
 			currAgent.cost = 0;
 			while (currAgent.id ~= to.id)
 				visitedList(end + 1) = currAgent.id;
-				if showPlot
+				if showPlot && (from.id ~= currAgent.id)
 					currAgent.plot();
 					drawnow();
 				end
@@ -126,7 +136,7 @@ classdef Network < agents.base.SimpleAgent;
 					case 'agents.roads.Intersection'
 						nextList = currAgent.getConnections();
 					case 'agents.roads.Garage'
-						nextList = currAgent.getConnections();
+						nextList = currAgent.connector.getConnections(currAgent);
 				end
 				
 				for i = 1:numel(nextList)
@@ -135,21 +145,42 @@ classdef Network < agents.base.SimpleAgent;
 					
 					% Allow next destinations be either roads or
 					% destination
-					if isa(next, 'agents.roads.RoadElement') || (next.id == to.id)
-						possibleCost = currAgent.cost + next.getLength() / next.speedLimit; % Time to traverse, need to integrate traffic level
-						if (possibleCost < next.cost)
-							next.cost = possibleCost; % Only set new cost if it is lower
+					switch class(next)
+						case 'agents.roads.RoadElement'
+							costMod = 0;
+							if isa(currAgent, 'agents.roads.RoadElement')
+								dx = currAgent.to.location.x - currAgent.from.location.x;
+								dy = currAgent.to.location.y - currAgent.from.location.y;
+								currVect = [dx, dy];
+								
+								dx = next.to.location.x - next.from.location.x;
+								dy = next.to.location.y - next.from.location.y;
+								nextVect = [dx, dy];
+								if all(currVect == -nextVect)
+									costMod = 1;
+								end
+							end
+							
+							possibleCost = currAgent.cost + (next.getLength() / next.speedLimit) + costMod; % Time to traverse, need to integrate traffic level
+							if (possibleCost < next.cost)
+								next.cost = possibleCost; % Only set new cost if it is lower
+								path(next.id) = currAgent.id;
+							end
+							
+							% Only add if not visited
+							if ~any(visitedList == next.id);
+								q.push(next, next.cost);
+							end
+						otherwise
 							path(next.id) = currAgent.id;
-						end
-						
-						% Only add if not visited
-						if ~any(visitedList == next.id);
-							q.push(next, next.cost);
-						end
+							next.cost = currAgent.cost;
+							if ~any(visitedList == next.id);
+								q.push(next, next.cost);
+							end
 					end
-						
+					
 				end
-				
+				cost = currAgent.cost;
 				% Select the next element and push the current agent to the
 				% path stack
 				flag = true;
@@ -172,7 +203,22 @@ classdef Network < agents.base.SimpleAgent;
 			for i = 1:numel(pathIdList)
 				agent = obj.instance.getCallee(pathIdList(i));
 				handle = agent.plot('r');
-				set(handle, 'LineWidth', 3);
+				set(handle, 'LineWidth', 2);
+			end
+		end
+		
+		function connector = findClosestConnector(obj, location)
+			minDist = inf;
+			connector = [];
+			
+			for i = 1:numel(obj.connectors)
+				dx = obj.connectors{i}.location.x - location.x;
+				dy = obj.connectors{i}.location.y - location.y;
+				dist = norm([dx, dy]);
+				if (dist < minDist)
+					connector = obj.connectors{i};
+					minDist = dist;
+				end
 			end
 		end
 		
@@ -183,6 +229,15 @@ classdef Network < agents.base.SimpleAgent;
 			hold on;
 			for i = 1:numel(obj.roads)
 				obj.roads{i}.plot();
+			end
+			
+			for i = 1:numel(obj.intersections)
+				handle = obj.intersections{i}.plot('b');
+				set(handle, 'MarkerSize', 5);
+			end
+			
+			for i = 1:numel(obj.garages)
+				obj.garages{i}.plot('b');
 			end
 		end
 		

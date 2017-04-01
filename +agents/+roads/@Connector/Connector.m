@@ -20,9 +20,17 @@ classdef Connector < agents.roads.Element
 		function addConnection(obj, from, to)
 			if obj.connectionMap.isKey(from.id)
 				temp = obj.connectionMap(from.id);
-				obj.connectionMap(from.id) = {temp{:}, to};
+				if isa(to, 'cell')
+					obj.connectionMap(from.id) = {temp{:}, to{:}};
+				else
+					obj.connectionMap(from.id) = {temp{:}, to};
+				end
 			else
-				obj.connectionMap(from.id) = {to};
+				if isa(to, 'cell')
+					obj.connectionMap(from.id) = {to{:}};
+				else
+					obj.connectionMap(from.id) = {to};
+				end
 			end
 		end
 		

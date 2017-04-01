@@ -50,8 +50,8 @@ classdef Intersection < agents.roads.Connector
 			else
 				color = 'k';
 			end
-			spec = ['+', color];
-			handle = plot(obj.location.x, obj.location.y, color);
+			spec = [color, 'o'];
+			handle = plot(obj.location.x, obj.location.y, spec);
 		end
 		
 	end

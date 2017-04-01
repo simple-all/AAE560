@@ -3,13 +3,15 @@
 simInst = sim.Instance();
 
 close all;
-
-x = 1:10;
-y = 1:10;
+angle = 10;
+x = 1:5;
+y = 1:5;
 
 [X, Y] = meshgrid(x, y);
+X = cosd(angle) * X + sind(angle) * Y;
+Y = -sind(angle) * X + cosd(angle) * Y;
 
-trafficGrid = agents.roads.Network(0.5);
+trafficGrid = agents.roads.Network(0.25);
 simInst.addCallee(trafficGrid);
 
 for i = 1:numel(X)
@@ -29,11 +31,43 @@ for i = 1:numel(Y)
 	trafficGrid.addRoad(trafficGrid.intersections{i}, trafficGrid.intersections{i + 1})
 end
 
+% Add garages
+x = linspace(1, 5, 5);
+y = linspace(1.5, 4.5, 4);
+
+dx = 0.1;
+for i = 1:numel(x)
+	for j =1:numel(y)
+		for k = -1:2:1
+			gx = x(i) + (k * dx);
+			location.x = cosd(angle) * gx + sind(angle) * y(j);
+			location.y = -sind(angle) * gx + cosd(angle) * y(j);
+			trafficGrid.addGarage(location, 1);
+		end
+	end
+end
+
+x = linspace(1.5, 4.5, 5);
+y = linspace(1, 4., 4);
+
+dx = 0.1;
+for i = 1:numel(x)
+	for j =1:numel(y)
+		for k = -1:2:1
+			gx = x(i) + (k * dx);
+			location.x = cosd(angle) * gx + sind(angle) * y(j);
+			location.y = -sind(angle) * gx + cosd(angle) * y(j);
+			trafficGrid.addGarage(location, 1);
+		end
+	end
+end
+
 simInst.runSim();
 
-path = trafficGrid.findPath(trafficGrid.intersections{1}, trafficGrid.roads{315});
+[path, cost] = trafficGrid.findPath(trafficGrid.garages{1}, trafficGrid.garages{31}, 0);
 disp('Plotting');
 fig = trafficGrid.plot();
+hold on;
 trafficGrid.plotPath(path, fig);
 
 
