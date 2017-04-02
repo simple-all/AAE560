@@ -25,10 +25,10 @@ classdef PQ2 < handle
         end
 
 
-        function [minPriorityElement, minPriorityIndx] = pop(thePQueue)
+        function [minPriorityElement, minPriorityVal] = pop(thePQueue)
             if ~thePQueue.isEmpty
                 thePQueue.nElements = thePQueue.nElements - 1;
-                [~, minPriorityIndx] = min(thePQueue.priorityList);
+                [minPriorityVal, minPriorityIndx] = min(thePQueue.priorityList);
                 minPriorityElement = thePQueue.valueList{minPriorityIndx};
 
                 thePQueue.priorityList(minPriorityIndx) = NaN;

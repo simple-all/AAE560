@@ -17,7 +17,7 @@ classdef Periodic < agents.base.SimpleAgent
 			if (time >= (obj.lastRunTime + obj.tStep));
 				bool = 1;
 				obj.lastRunTime = time;
-				obj.instance.scheduleAtTime(time + obj.tStep);
+				obj.instance.scheduleAtTime(obj, time + obj.tStep);
 			else
 				bool = 0;
 			end

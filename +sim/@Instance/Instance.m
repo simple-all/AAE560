@@ -6,7 +6,7 @@ classdef Instance < handle
 		calleeIndex = 0; % Current index of agents (equal to number of agents added to sim)
 		callStack; % Minimum priority queue of next agents to call
 		
-		currentTime;
+		currentTime = 0;
 	end
 	
 	methods
@@ -36,10 +36,19 @@ classdef Instance < handle
 		function runSim(obj, endTime)
 			% Simulate agents from start to end time
 			obj.currentTime = 0;
+			lastPrintTime = -inf;
 			while (obj.callStack.nElements > 0) && (obj.currentTime <= endTime)
 				% Get next agent and run
 				[agentIdx, time] = obj.callStack.pop();
 				obj.currentTime = time;
+				% Print out time every 10 seconds
+				if ~mod(round(time * 10) / 10, 10) && (time > lastPrintTime + 1)
+					lastPrintTime = time;
+					fprintf('INFO: Time = %0.1f\n', time);
+				end
+				if (time > endTime)
+					break;
+				end
 				agent = obj.calleeMap(agentIdx);
 				agent.runAtTime(obj.currentTime);
 			end

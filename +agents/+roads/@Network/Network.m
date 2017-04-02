@@ -34,7 +34,7 @@ classdef Network < agents.base.SimpleAgent;
 			obj.intersections{end + 1} = intersection;
 		end
 		
-		function addRoad(obj, from, to)
+		function addRoad(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
 			distance = norm([dx, dy]);
@@ -58,8 +58,8 @@ classdef Network < agents.base.SimpleAgent;
 				connector2 = connectors{i + 1};
 				
 				% Connect roads
-				road1 = agents.roads.RoadElement(connector1, connector2);
-				road2 = agents.roads.RoadElement(connector2, connector1);
+				road1 = agents.roads.RoadElement(connector1, connector2, speedLimit);
+				road2 = agents.roads.RoadElement(connector2, connector1, speedLimit);
 				obj.instance.addCallee(road1);
 				obj.instance.addCallee(road2);
 				
@@ -196,6 +196,7 @@ classdef Network < agents.base.SimpleAgent;
 			while (pathIdList(end) ~= from.id)
 				pathIdList(end + 1) = path(pathIdList(end));
 			end
+			pathIdList = flip(pathIdList);
 		end
 		
 		function plotPath(obj, pathIdList, figHandle)

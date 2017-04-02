@@ -27,9 +27,8 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		end
 		
 		function addVehicle(obj, vehicle)
-			if ~any(obj.vehicles == vehicle.id)
-				obj.vehicles(end + 1) = vehicle.id;
-			end
+			if ~any(obj.
+			obj.vehicles(end + 1) = vehicle.id;
 		end
 		
 		function removeVehicle(obj, vehicle)
@@ -41,18 +40,16 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			ahead = [];
 			for i = 1:numel(obj.vehicles)
 				nextVehicle = vehicle.instance.getCallee(obj.vehicles(i));
-				if (nextVehicle.id ~= vehicle.id)
-					if (nextVehicle.progress > vehicle.progress) || ~isOnRoad
-						if isOnRoad
-							nextDist = nextVehicle.progress - vehicle.progress;
-						else
-							nextDist = nextVehicle.progress;
-						end
-						
-						if (nextDist < dist)
-							dist = nextDist;
-							ahead = nextVehicle;
-						end
+				if (nextVehicle.progress > vehicle.progress) || ~isOnRoad
+					if isOnRoad
+						nextDist = nextVehicle.progress - vehicle.progress;
+					else
+						nextDist = nextVehicle.progress;
+					end
+					
+					if (nextDist < dist)
+						dist = nextDist;
+						ahead = nextVehicle;
 					end
 					
 				end
