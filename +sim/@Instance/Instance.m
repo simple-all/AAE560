@@ -33,6 +33,17 @@ classdef Instance < handle
 			end
 		end
 		
+		function callees = getAllCalleesOfType(obj, type)
+			allKeys = obj.calleeMap.keys;
+			callees = {};
+			for i = 1:numel(allKeys)
+				agent = obj.calleeMap(allKeys{i});
+				if isa(agent, type)
+					callees{end + 1} = agent;
+				end
+			end
+		end
+		
 		function runSim(obj, endTime)
 			% Simulate agents from start to end time
 			obj.currentTime = 0;

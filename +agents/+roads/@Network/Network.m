@@ -37,23 +37,42 @@ classdef Network < agents.base.SimpleAgent;
 		function addRoad(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
+			angle = atan2(dy, dx);
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
 			
 			% Create connectors 
 			connectors{1} = from;
 			for i = 1:(numElements - 1)
+				gx = 0;
 				location.x = from.location.x + (dx * i / numElements);
 				location.y = from.location.y + (dy * i / numElements);
+				
+				location.x = location.x + cos(angle) * gx + sin(angle) * gx;
+				location.y = location.y + -sin(angle) * gx + cos(angle) * gx;
+				
 				connectors{i + 1} = agents.roads.Connector(location);
 				obj.connectors{end + 1} = connectors{end};
 			end
+			% Negative direction
+% 			angle = -angle;
+% 			for j = 1:(numElements - 1)
+% 				gx = 0.01;
+% 				location.x = from.location.x + (dx * j / numElements);
+% 				location.y = from.location.y + (dy * j / numElements);
+% 				
+% 				location.x = location.x + cos(angle) * gx + sin(angle) * gx;
+% 				location.y = location.y + -sin(angle) * gx + cos(angle) * gx;
+% 				
+% 				connectors{end + 1} = agents.roads.Connector(location);
+% 				obj.connectors{end + 1} = connectors{end};
+% 			end
 			connectors{end + 1} = to;
 			
 			lastRoad1 = [];
 			lastRoad2 = [];
 			
-			for i = 1:(numel(connectors) - 1)
+			for i = 1:numElements
 				connector1 = connectors{i};
 				connector2 = connectors{i + 1};
 				
@@ -240,6 +259,41 @@ classdef Network < agents.base.SimpleAgent;
 			for i = 1:numel(obj.garages)
 				obj.garages{i}.plot('b');
 			end
+			
+			set(gca, 'Color', [0.7 0.7 0.7])
+		end
+		
+		function [mov] = animate(obj, startTime, endTime, dt)
+			% Animate the traffic over the grid
+			figHandle = obj.plot; %#ok
+			%figure;
+			hold on;
+			
+			mov = struct('cdata',[],'colormap',[]);
+			iter = 0;
+			
+			time = startTime;
+			% Get all vehicle instances
+			vehicles = obj.instance.getAllCalleesOfType('agents.vehicles.Vehicle');
+			while (time <= endTime)
+				iter = iter + 1;
+				disp(time);
+				% Plot all vehicles at current time
+				handles = {};
+				for i = 1:numel(vehicles)
+					tempH = vehicles{i}.plotAtTime(time);
+					if ~isempty(tempH)
+						handles{end + 1} = tempH; %#ok
+					end
+				end
+				mov(iter) = getframe;
+				
+				for i = 1:numel(handles)
+					delete(handles{i});
+				end
+				time = time + dt;
+			end
+			
 		end
 		
 	end

@@ -66,12 +66,10 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			else
 				color = 'k';
 			end
-			plotSpacing = 0.01;
-			angle = atan2(obj.to.location.y - obj.from.location.y, obj.to.location.x - obj.from.location.x);
-			from.x = obj.from.location.x + sin(angle) * plotSpacing;
-			from.y = obj.from.location.y + cos(angle) * plotSpacing;
-			to.x = obj.to.location.x + sin(angle) * plotSpacing;
-			to.y = obj.to.location.y + cos(angle) * plotSpacing;
+			from.x = obj.from.location.x;
+			from.y = obj.from.location.y;
+			to.x = obj.to.location.x;
+			to.y = obj.to.location.y;
 			handle = quiver(from.x, from.y, to.x - from.x, to.y - from.y, 0, color, 'MaxHeadSize', 0.4);
 		end
 	end
