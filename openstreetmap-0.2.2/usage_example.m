@@ -53,7 +53,8 @@ hold(ax, 'on')
 
 % plot the network, optionally a raster image can also be provided for the
 % map under the vector graphics of the network
-[x,y,z]=plot_way(ax, parsed_osm)
+[x,y,z,w]=plot_way(ax, parsed_osm);
+[bounds, node, way, ~] = assign_from_parsed(parsed_osm);
 %plot_way(ax, parsed_osm, map_img_filename) % if you also have a raster image
 
 %plot_route(ax, route, parsed_osm)

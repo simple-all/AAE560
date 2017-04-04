@@ -1,4 +1,4 @@
-function [count,a,b,c] = plot_way(ax, parsed_osm, map_img_filename)
+function [count,a,b] = plot_way(ax, parsed_osm, map_img_filename)
 %PLOT_WAY   plot parsed OpenStreetMap file
 %
 % usage
@@ -23,12 +23,12 @@ if nargin < 3
     map_img_filename = [];
 end
 
-[bounds, node, way] = assign_from_parsed(parsed_osm);
+[bounds, node, way, ~] = assign_from_parsed(parsed_osm);
 
 disp_info(bounds, size(node.id, 2), size(way.id, 2))
-[count,a,b,c]=show_ways(ax, bounds, node, way, map_img_filename);
+[count,a,b]=show_ways(ax, bounds, node, way, map_img_filename);
 
-function [count,a,b,c] = show_ways(hax, bounds, node, way, map_img_filename)
+function [count,a,b] = show_ways(hax, bounds, node, way, map_img_filename)
 count=0;
 
 show_map(hax, bounds, map_img_filename)
@@ -70,7 +70,6 @@ for i=1:size(way.id, 2)
     nd_ids = node.id;
     for j=1:num_nd
         cur_nd_id = way_nd_ids(1, j);
-        nd_id(:,j)=cur_nd_id;
         nd_coor(:, j) = node.xy(:, cur_nd_id == nd_ids);
     end
     
@@ -82,10 +81,9 @@ for i=1:size(way.id, 2)
         for j =1:1:y
             a(count,j)=nd_coor(1,j);
             b(count,j)=nd_coor(2,j);
-            c(count,j)=nd_id(1,j);
         end
     else
-       %plot(hax, nd_coor(1,:), nd_coor(2,:), 'g--')
+       plot(hax, nd_coor(1,:), nd_coor(2,:), 'g--')
     end
     %waitforbuttonpress
 end
