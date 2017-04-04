@@ -4,7 +4,7 @@ clear;
 close all;
 
 simInst = sim.Instance();
-endTime = 10 * 60; % 30 minutes
+endTime = 20 * 60; % 30 minutes
 
 
 angle = 10;
@@ -43,8 +43,8 @@ for i = 1:numel(Y)
 end
 
 % Add garages
-x = linspace(0, 4, 4);
-y = linspace(0.5, 3.5, 3);
+x = linspace(0, 4, 9);
+y = linspace(0.5, 3.5, 9);
 
 dx = 0.1;
 for i = 1:numel(x)
@@ -59,8 +59,8 @@ for i = 1:numel(x)
 	end
 end
 
-x = linspace(0.5, 3.5, 3);
-y = linspace(0, 4, 4);
+x = linspace(0.5, 3.5, 9);
+y = linspace(0, 4, 9);
 
 dy = 0.1;
 for i = 1:numel(x)
@@ -75,10 +75,11 @@ for i = 1:numel(x)
 	end
 end
 
+
 % Make a bunch of vehicles and start them up
-for i = 1:100
+for i = 1:500
 	maxSpeed = randi(40) + 10;
-	startTime = randi(3 * 60);
+	startTime = randi(2 * 60);
 	startPoint = randi(numel(trafficGrid.garages));
 	endPoint = startPoint;
 	while (endPoint == startPoint)

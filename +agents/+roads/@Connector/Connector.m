@@ -70,6 +70,13 @@ classdef Connector < agents.roads.Element
 			end
 		end
 		
+		function plot(obj, color)
+			if nargin == 1
+				color = 'k';
+			end
+			spec = ['o', color];
+			plot(obj.location.x, obj.location.y, spec);
+		end
 	end
 	
 end

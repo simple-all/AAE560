@@ -122,7 +122,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 								speed = min(obj.maxSpeed, currAgent.speedLimit);
 							end
 							obj.trueSpeed = speed;
-							obj.traffic = speed / min(currAgent.speedLimit, obj.maxSpeed);
+							obj.traffic = speed / currAgent.speedLimit;
 							
 							if (speed ~= 0)
 								tLeft = (currAgent.getLength() * (1 - obj.progress)) / speed;
@@ -200,7 +200,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 			if ~isempty(index)
 				color = interp1(linspace(0, 1, size(obj.cMap, 1)), obj.cMap, obj.trafficHistory(index), 'nearest');
 				spec = ['o'];
-				handle = plot(obj.locationHistory(index, 1), obj.locationHistory(index, 2), spec, 'Color', color, 'MarkerSize', 4, 'MarkerFaceColor', color);
+				handle = plot(obj.locationHistory(index, 1), obj.locationHistory(index, 2), spec, 'Color', color, 'MarkerSize', 2, 'MarkerFaceColor', color);
 			else
 				handle = [];
 			end

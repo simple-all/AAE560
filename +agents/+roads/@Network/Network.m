@@ -35,52 +35,49 @@ classdef Network < agents.base.SimpleAgent;
 		end
 		
 		function addRoad(obj, from, to, speedLimit)
+			obj.addRoadOneWay(from, to, speedLimit);
+			obj.addRoadOneWay(to, from, speedLimit);
+		end
+		
+		function addRoadOneWay(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
+			gx = 0.02;
 			angle = atan2(dy, dx);
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
 			
 			% Create connectors 
 			connectors{1} = from;
-			for i = 1:(numElements - 1)
-				gx = 0;
-				location.x = from.location.x + (dx * i / numElements);
-				location.y = from.location.y + (dy * i / numElements);
-				
-				location.x = location.x + cos(angle) * gx + sin(angle) * gx;
-				location.y = location.y + -sin(angle) * gx + cos(angle) * gx;
+			for i = 1:(numElements + 1)
+				if (i == 1)
+					location.x = from.location.x + (dx * 0.01);
+					location.y = from.location.y + (dy * 0.01);
+				elseif (i == (numElements + 1))
+					location.x = from.location.x + (dx * 0.99);
+					location.y = from.location.y + (dy * 0.99);
+				else
+					location.x = from.location.x + (dx * (i - 1) / numElements);
+					location.y = from.location.y + (dy * (i - 1) / numElements);
+				end
+				location.x = location.x + sin(angle) * gx;% + sin(angle) * gx;
+				location.y = location.y - cos(angle) * gx;% + cos(angle) * gx;
 				
 				connectors{i + 1} = agents.roads.Connector(location);
 				obj.connectors{end + 1} = connectors{end};
 			end
-			% Negative direction
-% 			angle = -angle;
-% 			for j = 1:(numElements - 1)
-% 				gx = 0.01;
-% 				location.x = from.location.x + (dx * j / numElements);
-% 				location.y = from.location.y + (dy * j / numElements);
-% 				
-% 				location.x = location.x + cos(angle) * gx + sin(angle) * gx;
-% 				location.y = location.y + -sin(angle) * gx + cos(angle) * gx;
-% 				
-% 				connectors{end + 1} = agents.roads.Connector(location);
-% 				obj.connectors{end + 1} = connectors{end};
-% 			end
+
 			connectors{end + 1} = to;
 			
 			lastRoad1 = [];
-			lastRoad2 = [];
 			
-			for i = 1:numElements
+			for i = 1:(numElements + 2)
 				connector1 = connectors{i};
 				connector2 = connectors{i + 1};
 				
 				% Connect roads
 				road1 = agents.roads.RoadElement(connector1, connector2, speedLimit);
-				road2 = agents.roads.RoadElement(connector2, connector1, speedLimit);
 				obj.instance.addCallee(road1);
-				obj.instance.addCallee(road2);
 				
 				% Make sure connectors are linked
 				
@@ -91,25 +88,18 @@ classdef Network < agents.base.SimpleAgent;
 					case 'agents.roads.Connector'
 						if ~isempty(lastRoad1)
 							connectors{i}.addConnection(lastRoad1, road1);
-							connectors{i}.addConnection(road2, lastRoad2);
 						end
 				end
-
-				switch class(connector2)
-					case 'agents.roads.Intersection'
-						connector2.addConnection(road2);
-% 					case 'agents.roads.Connector'
-% 						if ~isempty(lastRoad2)
-% 							connectors{i}.addConnection(road2, lastRoad2);
-% 						end
-				end
 				
+				if isa(connector2, 'agents.roads.Intersection')
+					connector2.addConnection(road1);
+				end
+
+
 				lastRoad1 = road1;
-				lastRoad2 = road2;
 				
 				% Add roads
 				obj.roads{end + 1} = road1;
-				obj.roads{end + 1} = road2;
 			end
 			
 		end
@@ -281,9 +271,11 @@ classdef Network < agents.base.SimpleAgent;
 				% Plot all vehicles at current time
 				handles = {};
 				for i = 1:numel(vehicles)
-					tempH = vehicles{i}.plotAtTime(time);
-					if ~isempty(tempH)
-						handles{end + 1} = tempH; %#ok
+					if (vehicles{i}.startTime <= time)
+						tempH = vehicles{i}.plotAtTime(time);
+						if ~isempty(tempH)
+							handles{end + 1} = tempH; %#ok
+						end
 					end
 				end
 				mov(iter) = getframe;
