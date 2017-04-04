@@ -4,18 +4,18 @@ clear;
 close all;
 
 simInst = sim.Instance();
-endTime = 20 * 60; % 30 minutes
+endTime = 30 * 60; % 30 minutes
 
 
 angle = 10;
-x = 0:4;
-y = 0:4;
+x = 0:0.25:1;
+y = 0:0.25:1;
 
 [X, Y] = meshgrid(x, y);
 X = cosd(angle) * X + sind(angle) * Y;
 Y = -sind(angle) * X + cosd(angle) * Y;
 
-trafficGrid = agents.roads.Network(0.25);
+trafficGrid = agents.roads.Network(0.2);
 simInst.addCallee(trafficGrid);
 
 rng(0); % Set random seed
@@ -25,10 +25,10 @@ for i = 1:numel(X)
 	location.x = X(i);
 	location.y = Y(i);
 	if any(i == randi(numel(X), 1, numel(X)))
-		location.x = location.x + (rand() - 0.5) * 0.8;
-		location.y = location.y + (rand() - 0.5) * 0.8;
+		location.x = location.x + (rand() - 0.5) * 0.1;
+		location.y = location.y + (rand() - 0.5) * 0.1;
 	end
-	trafficGrid.addIntersection(location);
+	trafficGrid.addIntersection(location, randi(30) + 105, -randi(115));
 end
 
 for i = 1:(numel(X) - numel(x))
@@ -43,10 +43,10 @@ for i = 1:numel(Y)
 end
 
 % Add garages
-x = linspace(0, 4, 9);
-y = linspace(0.5, 3.5, 9);
+x = linspace(0, 1, 9);
+y = linspace(-0.1, 1.1, 9);
 
-dx = 0.1;
+dx = 0.01;
 for i = 1:numel(x)
 	for j =1:numel(y)
 		%for k = -1:2:1
@@ -59,10 +59,10 @@ for i = 1:numel(x)
 	end
 end
 
-x = linspace(0.5, 3.5, 9);
-y = linspace(0, 4, 9);
+x = linspace(-0.1, 1.1, 9);
+y = linspace(0, 1, 9);
 
-dy = 0.1;
+dy = 0.01;
 for i = 1:numel(x)
 	for j =1:numel(y)
 		%for k = -1:2:1
@@ -76,15 +76,23 @@ for i = 1:numel(x)
 end
 
 
-% Make a bunch of vehicles and start them up
+for i = 1:numel(trafficGrid.intersections)
+	trafficGrid.intersections{i}.setup;
+end
+
+
+% Add a whole bunch of cars
 for i = 1:500
-	maxSpeed = randi(40) + 10;
-	startTime = randi(2 * 60);
+	maxSpeed = 80;
+	startTime = randi(60 * 5);
+	% Make a bunch of vehicles and start them up
 	startPoint = randi(numel(trafficGrid.garages));
 	endPoint = startPoint;
+	
 	while (endPoint == startPoint)
 		endPoint = randi(numel(trafficGrid.garages));
 	end
+	
 	[path, ~] = trafficGrid.findPath(trafficGrid.garages{startPoint}, trafficGrid.garages{endPoint}, 0);
 	vehicle = agents.vehicles.Vehicle(maxSpeed, startTime);
 	simInst.addCallee(vehicle);

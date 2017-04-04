@@ -77,6 +77,19 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 					
 					switch class(currAgent)
 						case 'agents.roads.RoadElement'
+							% Check if an intersection is up ahead
+							flag = 0;
+							if isa(currAgent.to, 'agents.roads.Intersection')
+								if ~currAgent.to.getLight(currAgent);
+									% Get distance to light
+									dx = currAgent.to.location.x - obj.location.x;
+									dy = currAgent.to.location.y - obj.location.y;
+									dist = norm([dx, dy]);
+									intSpeed = min(dist / 3, currAgent.speedLimit);
+									flag = 1;
+								end
+							end
+							
 							% Check for traffic ahead on road
 							nextVehicle = currAgent.getVehicleAhead(obj, 1);
 							if isempty(nextVehicle)
@@ -86,7 +99,6 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 									nextVehicle = nextRoad.getVehicleAhead(obj, 0);
 								end
 							end
-							
 							
 							if ~isempty(nextVehicle)
 								% Max sure to stay 3 seconds behind the
@@ -121,6 +133,11 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 								% Move along the road at normal pace
 								speed = min(obj.maxSpeed, currAgent.speedLimit);
 							end
+							
+							if  (flag)
+								speed = min(intSpeed, speed);
+							end
+							
 							obj.trueSpeed = speed;
 							obj.traffic = speed / currAgent.speedLimit;
 							
@@ -136,6 +153,9 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 									obj.progress = obj.progress + (tDiff - tMoved) / tTotal;
 									tMoved = tMoved + tDiff;
 								end
+							else
+								% Stopped
+								tMoved = tDiff;
 							end
 						case 'agents.roads.Garage'
 							% At Exit the garage (assume it takes no time
@@ -143,7 +163,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 							obj.currIndex = obj.currIndex + 1;
 					end
 					
-				
+					
 				end
 				
 				currAgent = obj.instance.getCallee(obj.path(obj.currIndex));

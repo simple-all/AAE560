@@ -53,14 +53,14 @@ classdef Instance < handle
 				[agentIdx, time] = obj.callStack.pop();
 				obj.currentTime = time;
 				% Print out time every 10 seconds
-				if ~mod(round(time * 10) / 10, 10) && (time > lastPrintTime + 1)
-					lastPrintTime = time;
+				%if ~mod(round(time * 10) / 10, 10) && (time > lastPrintTime + 1)
+				%	lastPrintTime = time;
 					fprintf('INFO: Time = %0.1f\n', time);
-				end
+				%end
 				if (time > endTime)
 					break;
 				end
-
+				if time >= 138
 				agent = obj.calleeMap(agentIdx);
 				agent.runAtTime(obj.currentTime);
 			end

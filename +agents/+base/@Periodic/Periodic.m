@@ -13,6 +13,10 @@ classdef Periodic < agents.base.SimpleAgent
 			obj.tStep = tStep;
 		end
 		
+		function setLastRunTime(obj, time)
+			obj.lastRunTime = time;
+		end
+		
 		function bool = isRunTime(obj, time)
 			if (time >= (obj.lastRunTime + obj.tStep));
 				bool = 1;

@@ -10,14 +10,17 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		
 		% Speed
 		speedLimit; 
+		
+		overallAngle;
 	end
 	
 	methods
 		
-		function obj = RoadElement(from, to, speedLimit)
+		function obj = RoadElement(from, to, speedLimit, overallAngle)
 			obj.from = from;
 			obj.to = to;
 			obj.speedLimit = speedLimit / 60 / 60; % Miles per second
+			obj.overallAngle = overallAngle;
 		end
 		
 		function length = getLength(obj)

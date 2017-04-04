@@ -7,7 +7,6 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 		lightMap;
 		freq;
 		allGreen = 0;
-		lastTime;
 		
 		lightHistory = [];
 		timeHistory = [];
@@ -15,17 +14,15 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 	
 	methods
 		
-		function obj = Intersection(location, freq, lastTime)
+		function obj = Intersection(location, freq)
 			% Super init
 			obj = obj@agents.roads.Connector(location);
 			obj.freq = freq;
-			obj.lastTime = lastTime;
-			obj.setLastRunTime(lastTime);
 		end
 		
 		function init(obj)
 			obj.setTimeStep(obj.freq)
-			obj.instance.scheduleAtTime(obj, obj.lastTime + obj.freq);
+			obj.instance.scheduleAtTime(obj, 0);
 		end
 		
 		function setup(obj)
@@ -121,22 +118,18 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 				otherwise
 					obj.allGreen = 1;
 			end
-			obj.record(0);
 		end
 		
 		function runAtTime(obj, time)
 			if obj.isRunTime(time);
 				obj.lightMap = ~obj.lightMap;
-				obj.record(time);
 			end
 		end
 		
 		function record(obj, time)
 			obj.timeHistory(end + 1) = time;
-			col = size(obj.lightHistory, 2) + 1;
 			for i = 1:numel(obj.intersectionMap)
-				obj.lightHistory(i, col) = obj.lightMap(i);
-			end
+				obj.lightHistory(i, end + 1) = obj.lightMap
 		end
 		
 		function lightState = getLight(obj, from)
@@ -193,26 +186,8 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 			handle = plot(obj.location.x, obj.location.y, spec);
 		end
 		
-		function handles = plotAtTime(obj, time)
-			colIndex = find(obj.timeHistory <= time, 1, 'last');
-			handles = {};
-			for i = 1:numel(obj.intersectionMap)
-				agent = obj.instance.getCallee(obj.intersectionMap(i));
-				if ~isempty(agent)
-					isLit = obj.lightHistory(i, colIndex);
-					angle = agent.overallAngle;
-					length = 0.05;
-					to.x = obj.location.x;
-					to.y = obj.location.y;
-					from.x = to.x - cos(angle) * length;
-					from.y = to.y - sin(angle) * length;
-					if isLit
-						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [0 1 0 0.4], 'LineWidth', 3);
-					else
-						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [1 0 0 0.4], 'LineWidth', 3);
-					end
-				end
-			end
+		function handle = plotLightsAtTime(obj)
+		
 		end
 	end
 	

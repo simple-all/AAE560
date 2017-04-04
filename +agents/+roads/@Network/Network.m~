@@ -28,8 +28,8 @@ classdef Network < agents.base.SimpleAgent;
 			garage.connect();
 		end
 		
-		function addIntersection(obj, location, freq, lastTime)
-			intersection = agents.roads.Intersection(location, freq, lastTime);
+		function addIntersection(obj, location, freq)
+			intersection = agents.roads.Intersection(location, freq);
 			obj.instance.addCallee(intersection);
 			obj.intersections{end + 1} = intersection;
 		end
@@ -42,7 +42,7 @@ classdef Network < agents.base.SimpleAgent;
 		function addRoadOneWay(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
-			gx = 0.01;
+			gx = 0.02;
 			angle = atan2(dy, dx);
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
@@ -282,20 +282,13 @@ classdef Network < agents.base.SimpleAgent;
 				% Plot all intersection at current time
 				intHandles = {};
 				for i = 1:numel(obj.intersections)
-					newHandles = obj.intersections{i}.plotAtTime(time);
-					intHandles = {intHandles{:} newHandles{:}};
-				end
+					obj.int
 				
 				mov(iter) = getframe;
 				
 				for i = 1:numel(handles)
 					delete(handles{i});
 				end
-				
-				for i = 1:numel(intHandles)
-					delete(intHandles{i});
-				end
-				
 				time = time + dt;
 			end
 			
