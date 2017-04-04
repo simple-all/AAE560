@@ -27,7 +27,7 @@ classdef Garage < agents.roads.Element
 			
 			
 			possibleFrom = obj.connector.connectionMap.keys;
-			flag = 0;
+			flag = 1;
 			if (norm([dx, dy]) == 0)
 				% Connect both ways //TODO
 				flag = 1;

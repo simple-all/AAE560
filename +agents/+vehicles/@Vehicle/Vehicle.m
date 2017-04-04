@@ -26,6 +26,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 	
 	properties (Access = private)
 		lastRoad;
+		cMap;
 	end
 	
 	methods
@@ -34,6 +35,13 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 			obj.setTimeStep(obj.runPeriod);
 			obj.startTime = startTime;
 			obj.movementLastUpdateTime = startTime;
+			
+			cVals = [1 0 0; 1 1 0; 0 1 0];
+			c_HSV = rgb2hsv(cVals);
+			nColors = 50;
+			c_HSV_interp = interp1([0, nColors / 2, nColors], c_HSV(:, 1), 1:nColors);
+			c_HSV = [c_HSV_interp', repmat(c_HSV(1, 2:3), nColors, 1)];
+			obj.cMap = hsv2rgb(c_HSV);
 		end
 		
 		function init(obj)
@@ -69,6 +77,19 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 					
 					switch class(currAgent)
 						case 'agents.roads.RoadElement'
+							% Check if an intersection is up ahead
+							flag = 0;
+							if isa(currAgent.to, 'agents.roads.Intersection')
+								if ~currAgent.to.getLight(currAgent);
+									% Get distance to light
+									dx = currAgent.to.location.x - obj.location.x;
+									dy = currAgent.to.location.y - obj.location.y;
+									dist = norm([dx, dy]);
+									intSpeed = min(dist / 3, currAgent.speedLimit);
+									flag = 1;
+								end
+							end
+							
 							% Check for traffic ahead on road
 							nextVehicle = currAgent.getVehicleAhead(obj, 1);
 							if isempty(nextVehicle)
@@ -78,7 +99,6 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 									nextVehicle = nextRoad.getVehicleAhead(obj, 0);
 								end
 							end
-							
 							
 							if ~isempty(nextVehicle)
 								% Max sure to stay 3 seconds behind the
@@ -113,6 +133,11 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 								% Move along the road at normal pace
 								speed = min(obj.maxSpeed, currAgent.speedLimit);
 							end
+							
+							if  (flag)
+								speed = min(intSpeed, speed);
+							end
+							
 							obj.trueSpeed = speed;
 							obj.traffic = speed / currAgent.speedLimit;
 							
@@ -128,6 +153,9 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 									obj.progress = obj.progress + (tDiff - tMoved) / tTotal;
 									tMoved = tMoved + tDiff;
 								end
+							else
+								% Stopped
+								tMoved = tDiff;
 							end
 						case 'agents.roads.Garage'
 							% At Exit the garage (assume it takes no time
@@ -135,7 +163,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 							obj.currIndex = obj.currIndex + 1;
 					end
 					
-				
+					
 				end
 				
 				currAgent = obj.instance.getCallee(obj.path(obj.currIndex));
@@ -178,16 +206,24 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 				color = 'b';
 			end
 			spec = [color];
-			cVals = [1 0 0; 1 1 0; 0 1 0];
-			c_HSV = rgb2hsv(cVals);
-			nColors = 50;
-			c_HSV_interp = interp1([0, nColors / 2, nColors], c_HSV(:, 1), 1:nColors);
-			c_HSV = [c_HSV_interp', repmat(c_HSV(1, 2:3), nColors, 1)];
-			cMap = hsv2rgb(c_HSV);
-			colormap(cMap);
+			
+			colormap(obj.cMap);
 			plot(obj.locationHistory(:, 1), obj.locationHistory(:, 2), spec, 'LineWidth', 1);
 			scatter(obj.locationHistory(:, 1), obj.locationHistory(:, 2), 3, obj.trafficHistory);
 			
+		end
+		
+		function handle = plotAtTime(obj, time)
+			
+			
+			index = find(obj.timeHistory >= time, 1, 'first');
+			if ~isempty(index)
+				color = interp1(linspace(0, 1, size(obj.cMap, 1)), obj.cMap, obj.trafficHistory(index), 'nearest');
+				spec = ['o'];
+				handle = plot(obj.locationHistory(index, 1), obj.locationHistory(index, 2), spec, 'Color', color, 'MarkerSize', 2, 'MarkerFaceColor', color);
+			else
+				handle = [];
+			end
 		end
 		
 		

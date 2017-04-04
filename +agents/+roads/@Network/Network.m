@@ -28,40 +28,56 @@ classdef Network < agents.base.SimpleAgent;
 			garage.connect();
 		end
 		
-		function addIntersection(obj, location)
-			intersection = agents.roads.Intersection(location);
+		function addIntersection(obj, location, freq, lastTime)
+			intersection = agents.roads.Intersection(location, freq, lastTime);
 			obj.instance.addCallee(intersection);
 			obj.intersections{end + 1} = intersection;
 		end
 		
 		function addRoad(obj, from, to, speedLimit)
+			obj.addRoadOneWay(from, to, speedLimit);
+			obj.addRoadOneWay(to, from, speedLimit);
+		end
+		
+		function addRoadOneWay(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
+			gx = 0.01;
+			angle = atan2(dy, dx);
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
 			
 			% Create connectors 
 			connectors{1} = from;
-			for i = 1:(numElements - 1)
-				location.x = from.location.x + (dx * i / numElements);
-				location.y = from.location.y + (dy * i / numElements);
+			for i = 1:(numElements + 1)
+				if (i == 1)
+					location.x = from.location.x + (dx * 0.01);
+					location.y = from.location.y + (dy * 0.01);
+				elseif (i == (numElements + 1))
+					location.x = from.location.x + (dx * 0.99);
+					location.y = from.location.y + (dy * 0.99);
+				else
+					location.x = from.location.x + (dx * (i - 1) / numElements);
+					location.y = from.location.y + (dy * (i - 1) / numElements);
+				end
+				location.x = location.x + sin(angle) * gx;% + sin(angle) * gx;
+				location.y = location.y - cos(angle) * gx;% + cos(angle) * gx;
+				
 				connectors{i + 1} = agents.roads.Connector(location);
 				obj.connectors{end + 1} = connectors{end};
 			end
+
 			connectors{end + 1} = to;
 			
 			lastRoad1 = [];
-			lastRoad2 = [];
 			
-			for i = 1:(numel(connectors) - 1)
+			for i = 1:(numElements + 2)
 				connector1 = connectors{i};
 				connector2 = connectors{i + 1};
 				
 				% Connect roads
-				road1 = agents.roads.RoadElement(connector1, connector2, speedLimit);
-				road2 = agents.roads.RoadElement(connector2, connector1, speedLimit);
+				road1 = agents.roads.RoadElement(connector1, connector2, speedLimit, angle);
 				obj.instance.addCallee(road1);
-				obj.instance.addCallee(road2);
 				
 				% Make sure connectors are linked
 				
@@ -72,25 +88,18 @@ classdef Network < agents.base.SimpleAgent;
 					case 'agents.roads.Connector'
 						if ~isempty(lastRoad1)
 							connectors{i}.addConnection(lastRoad1, road1);
-							connectors{i}.addConnection(road2, lastRoad2);
 						end
 				end
-
-				switch class(connector2)
-					case 'agents.roads.Intersection'
-						connector2.addConnection(road2);
-% 					case 'agents.roads.Connector'
-% 						if ~isempty(lastRoad2)
-% 							connectors{i}.addConnection(road2, lastRoad2);
-% 						end
-				end
 				
+				if isa(connector2, 'agents.roads.Intersection')
+					connector2.addConnection(road1);
+				end
+
+
 				lastRoad1 = road1;
-				lastRoad2 = road2;
 				
 				% Add roads
 				obj.roads{end + 1} = road1;
-				obj.roads{end + 1} = road2;
 			end
 			
 		end
@@ -240,6 +249,56 @@ classdef Network < agents.base.SimpleAgent;
 			for i = 1:numel(obj.garages)
 				obj.garages{i}.plot('b');
 			end
+			
+			set(gca, 'Color', [0.7 0.7 0.7])
+		end
+		
+		function [mov] = animate(obj, startTime, endTime, dt)
+			% Animate the traffic over the grid
+			figHandle = obj.plot; %#ok
+			%figure;
+			hold on;
+			
+			mov = struct('cdata',[],'colormap',[]);
+			iter = 0;
+			
+			time = startTime;
+			% Get all vehicle instances
+			vehicles = obj.instance.getAllCalleesOfType('agents.vehicles.Vehicle');
+			while (time <= endTime)
+				iter = iter + 1;
+				disp(time);
+				% Plot all vehicles at current time
+				handles = {};
+				for i = 1:numel(vehicles)
+					if (vehicles{i}.startTime <= time)
+						tempH = vehicles{i}.plotAtTime(time);
+						if ~isempty(tempH)
+							handles{end + 1} = tempH; %#ok
+						end
+					end
+				end
+				
+				% Plot all intersection at current time
+				intHandles = {};
+				for i = 1:numel(obj.intersections)
+					newHandles = obj.intersections{i}.plotAtTime(time);
+					intHandles = {intHandles{:} newHandles{:}};
+				end
+				
+				mov(iter) = getframe;
+				
+				for i = 1:numel(handles)
+					delete(handles{i});
+				end
+				
+				for i = 1:numel(intHandles)
+					delete(intHandles{i});
+				end
+				
+				time = time + dt;
+			end
+			
 		end
 		
 	end
