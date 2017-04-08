@@ -82,7 +82,7 @@ end
 
 
 % Add a whole bunch of cars
-for i = 1:1500
+for i = 1:10
 	maxSpeed = 80;
 	startTime = randi(60 * 10);
 	% Make a bunch of vehicles and start them up

@@ -12,6 +12,7 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		speedLimit; 
 		
 		overallAngle;
+         density;
 	end
 	
 	methods
@@ -21,8 +22,11 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			obj.to = to;
 			obj.speedLimit = speedLimit / 60 / 60; % Miles per second
 			obj.overallAngle = overallAngle;
-		end
-		
+            obj.setTimeStep(5);
+        end
+        function init(obj)
+            obj.instance.scheduleAtTime(obj,0);
+        end
 		function length = getLength(obj)
 			dx = obj.to.location.x - obj.from.location.x;
 			dy = obj.to.location.y - obj.from.location.y;
@@ -74,8 +78,15 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			to.x = obj.to.location.x;
 			to.y = obj.to.location.y;
 			handle = quiver(from.x, from.y, to.x - from.x, to.y - from.y, 0, color, 'MaxHeadSize', 0.4);
-		end
-	end
+        end
+        function runAtTime(obj, time)
+            if obj.isRunTime(time)
+                obj.density = numel(obj.vehicles)/ obj.getLength();
+              
+            end
+        end
+            
+    end
 	
 end
 
