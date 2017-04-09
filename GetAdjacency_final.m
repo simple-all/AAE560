@@ -1,3 +1,7 @@
+clear all
+close all
+clc
+usage_example;
 getmatrix;
 [d,e]=size(w);
 e=e-1;
@@ -70,6 +74,36 @@ xycartECEF=xycartECEF*0.000621371;%ECEF coordinates in miles
 xyzcartECEF=xyzcartECEF*0.000621371;%ECEF coordinates in miles
 xycartENU=xycartENU*0.000621371;%ENU coordinates in miles
 xyzcartENU=xyzcartENU*0.000621371;%ENU coordinates in miles
-clear temp temp2;
 Adjacency=accumarray(NodeIdConnect,1);
-%WeightedAdjacency=accumarray(NodeIdConnect,DistanceGeodetic);
+for i=1:1:length(Adjacency)
+Indegree(i) = sum(Adjacency(:,i));
+Outdegree(i)=sum(Adjacency(i,:));
+Totaldegree(i)=Indegree(i)+Outdegree(i);
+end
+
+count=0;
+Subindx=zeros(length(Adjacency),1);
+NIdCon=zeros(size(NodeIdConnect));
+for i = 1:1:length(Adjacency)
+    if Totaldegree(i)>0
+        count=count+1;
+        Subindx(i)=count;
+        XYENU(count,1)=xycartENU(i,1);
+        XYENU(count,2)=xycartENU(i,2);
+    end
+end
+
+for i=1:1:length(Adjacency)
+    for j=1:1:length(NodeIdConnect)
+        if Totaldegree(i) > 0
+            if NodeIdConnect(j,1) == i
+                NIdCon(j,1)=Subindx(i);
+            end
+            if NodeIdConnect(j,2) == i
+                NIdCon(j,2)=Subindx(i);
+            end
+        end
+    end
+end
+AdjScrubed=accumarray(NIdCon,1);
+%clear temp temp2 w x X x1 y z j j2 k i idx1 idx2 g y1 Y d Avg C count;
