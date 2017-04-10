@@ -85,6 +85,56 @@ speedLimit = 25; % mph
 % ARG2: Second intersection object
 % ARG3: Speed limit of the road (mph)
 
+% Calculate the in and out degree of each intersection from the
+% NodeIdConnect list
+nodeList = struct();
+for i = 1:length(NodeIdConnect)
+	from = ['n', num2str(NodeIdConnect(i, 1))];
+	to = ['n', num2str(NodeIdConnect(i, 2))];
+	if ~any(strcmp(from, fields(nodeList)))
+		nodeList.(from) = struct();
+		nodeList.(from).in = [];
+		nodeList.(from).out = [];
+	end
+	
+	if ~any(strcmp(to, fields(nodeList)))
+		nodeList.(to) = struct();
+		nodeList.(to).in = {};
+		nodeList.(to).out = {};
+	end
+	
+	nodeList.(from).out{end + 1} = to;
+	nodeList.(to).in{end + 1} = from;
+end
+
+% Get all nodes that have an in-degree of 1
+nodeNames = fields(nodeList);
+singleList = {};
+for i = 1:numel(nodeNames)
+	name = nodeNames{i};
+	if (numel(nodeList.(name).in) == 1) && (numel(nodeList.(name).out) == 1)
+		singleList{end + 1} = name;
+	end
+end
+
+keyboard;
+
+% Go through the node list and replace all instances of single in-degree
+% nodes with where they go to or come from (depending on direction...
+
+flag = 1;
+iter = 1;
+while flag
+	sprintf('Loop %d\n', iter);
+	iter = iter + 1;
+	flag = 0;
+	for i = 1:numel(nodeNames)
+		name = nodeNames{i};
+		froms = nodeList.(name).from;
+		tos = nodeList.(name).to;
+	end
+end
+
 % This bit continues making a four-way intersection for demonstration purposes
 
 for i =1:1:length(NodeIdConnect)
