@@ -3,18 +3,22 @@
 clear;
 close all;
 
+usage_example;
+GetAdjacency_final;
+
 simInst = sim.Instance();
-endTime = 30 * 60; % 30 minutes
+endTime = 1 * 60; % 5 minutes
 
 
 angle = 10;
 x = 0:0.25:1;
 y = 0:0.25:1;
 
-[X, Y] = meshgrid(x, y);
-X = cosd(angle) * X + sind(angle) * Y;
-Y = -sind(angle) * X + cosd(angle) * Y;
-
+%[X, Y] = meshgrid(x, y);
+%X = cosd(angle) * X + sind(angle) * Y;
+%Y = -sind(angle) * X + cosd(angle) * Y;
+X = xycartENU(:,1);
+Y = xycartENU(:,2);
 trafficGrid = agents.roads.Network(0.2);
 simInst.addCallee(trafficGrid);
 
@@ -24,10 +28,10 @@ for i = 1:numel(X)
 	
 	location.x = X(i);
 	location.y = Y(i);
-	if any(i == randi(numel(X), 1, numel(X)))
-		location.x = location.x + (rand() - 0.5) * 0.1;
-		location.y = location.y + (rand() - 0.5) * 0.1;
-	end
+	%if any(i == randi(numel(X), 1, numel(X)))
+		%location.x = location.x + (rand() - 0.5) * 0.1;
+		%location.y = location.y + (rand() - 0.5) * 0.1;
+	%end
 	trafficGrid.addIntersection(location, randi(30) + 105, -randi(115));
 end
 
