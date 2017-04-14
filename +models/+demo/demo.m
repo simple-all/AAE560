@@ -128,7 +128,7 @@ myTrafficGrid.plot();
 % To view the traffic lights in action, the simulation can be run and
 % animated as follows:
 startTime = 0; % seconds. Simulation always starts at 0, but animation can start at any time
-endTime = 240; % seconds
+endTime = 10; % seconds
 simInst.runSim(endTime);
 
 tStep = 1; % Animate a frame every second

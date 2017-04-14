@@ -76,7 +76,7 @@ for i=1:size(way.id, 2)
     
     % plot way (highway = red, other = green)
     if flag == 1
-        plot(hax, nd_coor(1,:), nd_coor(2,:), 'b-')
+        plot(hax, nd_coor(1,:), nd_coor(2,:), 'b-*')
         count=count+1;
         [x,y]=size(nd_coor(1,:));
         for j =1:1:y
