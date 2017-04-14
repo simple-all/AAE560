@@ -13,6 +13,8 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		
 		overallAngle;
          density;
+         traveltimeindex;
+         bufferindex
 	end
 	
 	methods
@@ -85,8 +87,11 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
               
             end
         end
+ 
             
     end
+    
+        
 	
 end
 
