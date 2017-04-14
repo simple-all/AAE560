@@ -22,6 +22,11 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 		speedHistory = [];
 		trafficHistory = []; % Travel speed divided by speed limit
 		timeHistory = [];
+		
+		% Traffic parameters
+		travelTime;
+		travelTimeIndex;
+		idealTime;
 	end
 	
 	properties (Access = private)
@@ -48,12 +53,13 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 			obj.instance.scheduleAtTime(obj, obj.startTime);
 		end
 		
-		function setPath(obj, path)
+		function setPath(obj, path, cost)
 			obj.path = path;
 			obj.currIndex = 1;
 			obj.progress = 0;
 			startingAgent = obj.instance.getCallee(obj.path(1));
 			obj.location = startingAgent.location;
+			obj.idealTime = cost;
 		end
 		
 		function runAtTime(obj, time)
@@ -70,6 +76,8 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 					% If at the end of the path, don't move
 					if (obj.currIndex == numel(obj.path))
 						obj.setTimeStep(inf);
+						obj.travelTime = time - obj.startTime;
+						obj.travelTimeIndex = (time - obj.startTime) / obj.idealTime;
 						fprintf('Vehicle %d finished at time %0.1f, Commute Time = %0.1f \n', obj.id, time, time - obj.startTime);
 						break;
 					end
