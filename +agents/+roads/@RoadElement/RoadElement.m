@@ -110,8 +110,12 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
         
         function handle = plotAtTime(obj, time, maxDensity)
 			colIndex = find(obj.timeHistory <= time, 1, 'last');
-            densityScale = 1 - (obj.densityHistory(colIndex) / maxDensity);
-            densityScale = max(0, densityScale);
+            if (maxDensity == 0)
+                densityScale = 1;
+            else
+                densityScale = 1 - (obj.densityHistory(colIndex) / maxDensity);
+                densityScale = max(0, densityScale);
+            end
             color = interp1(linspace(0, 1, size(obj.cMap, 1)), obj.cMap, densityScale, 'nearest');
             if isempty(obj.myHandle)
     			obj.myHandle = obj.plot(color);

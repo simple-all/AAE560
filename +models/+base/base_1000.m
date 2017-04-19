@@ -1,21 +1,16 @@
-clear;
-close all;
-clc;
-
-expNum = 1; % Manual set experiment number (for now)
+function expNum = base_1000(logPath, expNum)
 
 % Set the random seed
-rng(0);
+rng(expNum);
 
 % Load the traffic grid
-trafficGrid = load('C:\Users\tsatter\Documents\GitHub\AAE560\+models\+resources\baseTrafficGrid.mat');
+trafficGrid = load('+models/+resources/baseTrafficGrid.mat');
 trafficGrid = trafficGrid.myTrafficGrid;
 
 % Retreive the simulation instance
 simInst = trafficGrid.instance;
 
 % Define start and end time
-startTime = 0;
 endTime = 60 * 60; % 1 hour of sim time
 
 % Add vehicles just to start
@@ -49,7 +44,7 @@ path = path(1:(numel(path) - numel(mfilename)));
 save([path, 'results-', num2str(expNum)]);
 
 % Animate the scenario, save to movie
-mov = trafficGrid.animate(startTime, 60, 1);
+mov = trafficGrid.animate(0, endTime, 1);
 clearvars -except mov expNum path startTime endTime trafficGrid
 vid = VideoWriter([path, 'results-', num2str(expNum), '.mp4'], 'MPEG-4');
 vid.Quality = 100;
@@ -60,10 +55,11 @@ close(vid);
 
 % Animate the scenario density, save to movie
 clearvars -except expNum path startTime endTime trafficGrid
-mov = trafficGrid.animateDensity(0, 60, 1);
+mov = trafficGrid.animateDensity(0, endTime, 1);
 vid = VideoWriter([path, 'results-density-', num2str(expNum), '.mp4'], 'MPEG-4');
 vid.Quality = 100;
 vid.FrameRate = 30;
 open(vid);
 writeVideo(vid, mov);
 close(vid);
+end
