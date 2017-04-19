@@ -1,4 +1,4 @@
-function [route_choice] = MinObjFuncApproach(AvgS1,AvgS2,AvgS3,TotalCars1,TotalCars2,TotalCars3)
+function [route_choice] = MaxObjFuncApproach(AvgS1,AvgS2,AvgS3,TotalCars1,TotalCars2,TotalCars3)
 %UNTITLED Summary of this function goes here
 % AvgS - is the average travel speed in each of the three other routes
 % TotalCars = amount of vehicles on the road
