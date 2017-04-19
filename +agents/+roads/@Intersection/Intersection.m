@@ -120,7 +120,12 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 					obj.intersectionMap(2, :) = setdiff([allKeys{:}], [from, to]);
 				otherwise
 					obj.allGreen = 1;
-			end
+            end
+            
+            if (numel(obj.connectionMap.keys) == 0)
+                obj.setTimeStep(inf);
+            end
+            
 			obj.record(0);
 		end
 		
@@ -184,6 +189,10 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 		end
 		
 		function handle = plot(obj, varargin)
+            if (numel(obj.connectionMap.keys) == 0)
+                handle = [];
+                return;
+            end
 			if ~isempty(varargin)
 				color = varargin{1};
 			else
@@ -201,15 +210,15 @@ classdef Intersection < agents.roads.Connector & agents.base.Periodic;
 				if ~isempty(agent)
 					isLit = obj.lightHistory(i, colIndex);
 					angle = agent.overallAngle;
-					length = 0.05;
+					length = 0.02;
 					to.x = obj.location.x;
 					to.y = obj.location.y;
 					from.x = to.x - cos(angle) * length;
 					from.y = to.y - sin(angle) * length;
 					if isLit
-						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [0 1 0 0.4], 'LineWidth', 3);
+						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [0 1 0 0.4], 'LineWidth', 2);
 					else
-						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [1 0 0 0.4], 'LineWidth', 3);
+						handles{end + 1} = plot([from.x, to.x], [from.y, to.y], 'Color', [1 0 0 0.4], 'LineWidth', 2);
 					end
 				end
 			end

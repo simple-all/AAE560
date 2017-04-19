@@ -12,7 +12,14 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		speedLimit; 
 		
 		overallAngle;
-         density;
+        density;
+        
+        timeHistory = [];
+        densityHistory = [];
+        
+        % Plotting
+        cMap;
+        myHandle;
 	end
 	
 	methods
@@ -22,11 +29,20 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			obj.to = to;
 			obj.speedLimit = speedLimit / 60 / 60; % Miles per second
 			obj.overallAngle = overallAngle;
-            obj.setTimeStep(5);
+            obj.setTimeStep(1);
+            
+            cVals = [1 0 0; 1 1 0; 0 1 0];
+			c_HSV = rgb2hsv(cVals);
+			nColors = 50;
+			c_HSV_interp = interp1([0, nColors / 2, nColors], c_HSV(:, 1), 1:nColors);
+			c_HSV = [c_HSV_interp', repmat(c_HSV(1, 2:3), nColors, 1)];
+			obj.cMap = hsv2rgb(c_HSV);
         end
+        
         function init(obj)
             obj.instance.scheduleAtTime(obj,0);
         end
+        
 		function length = getLength(obj)
 			dx = obj.to.location.x - obj.from.location.x;
 			dy = obj.to.location.y - obj.from.location.y;
@@ -77,14 +93,34 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 			from.y = obj.from.location.y;
 			to.x = obj.to.location.x;
 			to.y = obj.to.location.y;
-			handle = quiver(from.x, from.y, to.x - from.x, to.y - from.y, 0, color, 'MaxHeadSize', 0.4);
+			handle = quiver(from.x, from.y, to.x - from.x, to.y - from.y, 0, 'Color', color, 'MaxHeadSize', 0.4);
         end
+        
         function runAtTime(obj, time)
             if obj.isRunTime(time)
                 obj.density = numel(obj.vehicles)/ obj.getLength();
-              
+                obj.log(time);
             end
         end
+        
+        function log(obj, time)
+            obj.timeHistory(end + 1) = time;
+            obj.densityHistory(end + 1) = obj.density;
+        end
+        
+        function handle = plotAtTime(obj, time, maxDensity)
+			colIndex = find(obj.timeHistory <= time, 1, 'last');
+            densityScale = 1 - (obj.densityHistory(colIndex) / maxDensity);
+            densityScale = max(0, densityScale);
+            color = interp1(linspace(0, 1, size(obj.cMap, 1)), obj.cMap, densityScale, 'nearest');
+            if isempty(obj.myHandle)
+    			obj.myHandle = obj.plot(color);
+            else
+                set(obj.myHandle, 'Color', color);
+            end
+            handle = obj.myHandle;
+		end
+        
             
     end
 	

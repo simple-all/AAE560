@@ -36,7 +36,7 @@ lightStartTime = -10; % Seconds (should be <= 0)
 for i=1:1:length(AdjScrubed)
     location.x = XYENU(i,1); % Miles
     location.y = XYENU(i,2); % Miles
-    myTrafficGrid.addIntersection(location, lightFreq, lightStartTime)
+    myTrafficGrid.addIntersection(location, lightFreq - randi(20), lightStartTime - randi(89))
 end
 
 % Inputs
@@ -95,12 +95,14 @@ for i = 1:length(NodeIdConnect)
 		nodeList.(from) = struct();
 		nodeList.(from).in = [];
 		nodeList.(from).out = [];
+        nodeList.(from).index = NIdCon(i, 1);
 	end
 	
 	if ~any(strcmp(to, fields(nodeList)))
 		nodeList.(to) = struct();
 		nodeList.(to).in = {};
 		nodeList.(to).out = {};
+        nodeList.(to).index = NIdCon(i, 2);
 	end
 	
 	nodeList.(from).out{end + 1} = to;
@@ -117,7 +119,6 @@ for i = 1:numel(nodeNames)
 	end
 end
 
-keyboard;
 
 % Go through the node list and replace all instances of single in-degree
 % nodes with where they go to or come from (depending on direction...
@@ -130,26 +131,104 @@ while flag
 	flag = 0;
 	for i = 1:numel(nodeNames)
 		name = nodeNames{i};
-		froms = nodeList.(name).from;
-		tos = nodeList.(name).to;
+		froms = nodeList.(name).in;
+		tos = nodeList.(name).out;
+        for j = 1:numel(tos)
+            if any(strcmp(tos{j}, singleList))
+                nodeList.(name).out{j} = nodeList.(tos{j}).out{:};
+                flag = 1;
+            end
+        end
 	end
 end
 
 % This bit continues making a four-way intersection for demonstration purposes
 
-for i =1:1:length(NodeIdConnect)
-    pt1 = NIdCon(i,1);
-    pt2 = NIdCon(i,2);
-    myTrafficGrid.addRoad(myTrafficGrid.intersections{pt1}, myTrafficGrid.intersections{pt2}, speedLimit);
+for i = 1:numel(nodeNames)
+    if ~any(strmatch(nodeNames{i}, singleList));
+        % Connect
+        name = nodeNames{i};
+        from = nodeList.(name).index;
+        for j = 1:numel(nodeList.(name).out)
+            nameTo = nodeList.(name).out{j};
+            to = nodeList.(nameTo).index;
+            myTrafficGrid.addRoad(myTrafficGrid.intersections{from}, myTrafficGrid.intersections{to}, speedLimit);
+        end
+    end
 end
+
+% for i =1:1:length(NodeIdConnect)
+%     pt1 = NIdCon(i,1);
+%     pt2 = NIdCon(i,2);
+%     myTrafficGrid.addRoad(myTrafficGrid.intersections{pt1}, myTrafficGrid.intersections{pt2}, speedLimit);
+% end
 % 3: Garage definition
 % Garages are start and end points for vehicles. On construction, they will
 % find the nearest road element junction and connect to it. Construction is
 % as follows:
-location.x = 0.1; % Miles
-location.y = 0.1; % Miles
-maxVehicles = 10;
-myTrafficGrid.addGarage(location, maxVehicles);
+% Add garages
+x = linspace(-0.07, 0.82, 9);
+y = linspace(-0.9, -0.27, 19);
+
+dx = 0.01;
+angle = -15;
+for i = 1:numel(x)
+    for j =1:numel(y)
+        k = 1;
+        gx = x(i) + (k * dx);
+        location.x = cosd(angle) * gx + sind(angle) * y(j);
+        location.y = -sind(angle) * gx + cosd(angle) * y(j);
+        myTrafficGrid.addGarage(location, 1);
+    end
+end
+
+x = linspace(-0.07, 0.82, 9);
+y = linspace(-0.92, -0.29, 19);
+
+dx = 0.01;
+angle = -15;
+for i = 1:numel(x)
+    for j =1:numel(y)
+        k = 1;
+        gx = x(i) + (k * dx);
+        location.x = cosd(angle) * gx + sind(angle) * y(j);
+        location.y = -sind(angle) * gx + cosd(angle) * y(j);
+        myTrafficGrid.addGarage(location, 1);
+    end
+end
+
+% Add garages to exterior roads
+x = linspace(-0.35, -0.2, 2);
+y = linspace(-0.92, 0, 21);
+dx = 0.01;
+angle = -15;
+for i = 1:numel(x)
+    for j =1:numel(y)
+        k = 1;
+        gx = x(i) + (k * dx);
+        location.x = cosd(angle) * gx + sind(angle) * y(j);
+        location.y = -sind(angle) * gx + cosd(angle) * y(j);
+        myTrafficGrid.addGarage(location, 1);
+    end
+end
+    
+
+locations = [0.2, -1.2;
+    0.4, -1.2;
+    0.5, -1.1;
+    0.6, -1.2;
+    0.7, -1.0;
+    1.2, -0.8;
+    1.2, -0.6;
+    1.2, -0.35;
+    0.4, -0.1;
+    0.3, 0];
+
+for i = 1:size(locations, 1)
+    location.x = locations(i, 1);
+    location.y = locations(i, 2);
+    myTrafficGrid.addGarage(location, 1); 
+end
 
 % Inputs
 % ARG1: Struct with fields "x" and "y" designating the cartesian location,
@@ -167,18 +246,41 @@ myTrafficGrid.addGarage(location, maxVehicles);
 
  for i = 1:numel(myTrafficGrid.intersections)
  	myTrafficGrid.intersections{i}.setup();
-end
+ end
+
+ % End of traffic grid generation. 
+ 
 % 
 % % This ends construction. A view of the network can be generated:
- myTrafficGrid.plot();
+ %myTrafficGrid.plot();
 % Intersections are blue circles, garages are blue asterisks, and roads are
 % the black directional arrows. 
 
+% Add a whole bunch of cars
+allVehicles = {};
+for i = 1:1000
+    fprintf('Adding car %0.0f\n', i);
+	maxSpeed = 80;
+	startTime = randi(60 * 5);
+	% Make a bunch of vehicles and start them up
+	startPoint = randi(numel(myTrafficGrid.garages));
+	endPoint = startPoint;
+	
+	while (endPoint == startPoint)
+		endPoint = randi(numel(myTrafficGrid.garages));
+	end
+	
+	[path, cost] = myTrafficGrid.findPath(myTrafficGrid.garages{startPoint}, myTrafficGrid.garages{endPoint}, 0);
+	vehicle = agents.vehicles.Vehicle(maxSpeed, startTime);
+	simInst.addCallee(vehicle);
+	vehicle.setPath(path, cost);
+	allVehicles{end + 1} = vehicle;
+end
 
 % To view the traffic lights in action, the simulation can be run and
 % animated as follows:
 startTime = 0; % seconds. Simulation always starts at 0, but animation can start at any time
-endTime = 2; % seconds
+endTime = 60 * 60; % seconds
 simInst.runSim(endTime);
 % 
 tStep = 1; % Animate a frame every second

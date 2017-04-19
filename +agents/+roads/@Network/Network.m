@@ -8,19 +8,30 @@ classdef Network < agents.base.SimpleAgent;
 		intersections = {};
 		connectors = {};
 		maxElementLength;
+        
+        connectionList;
 	end
 	
 	methods
 		
 		function obj = Network(maxElementLength)
 			obj.maxElementLength = maxElementLength;
+            obj.connectionList = struct();
 		end
 		
 		function addGarage(obj, location, numSpaces)
 			
 			% Get the nearest connector
 			connector = obj.findClosestConnector(location);
-			
+			allKeys = connector.connectionMap.keys;
+            for i = 1:numel(allKeys)
+                tos = connector.connectionMap(allKeys{i});
+                for j = 1:numel(tos)
+                    if isa(tos{j}, 'agents.roads.Garage')
+                        return;
+                    end
+                end
+            end
 			% Create the garage
 			garage = agents.roads.Garage(location, connector, numSpaces);
 			obj.garages{end + 1} = garage;
@@ -35,14 +46,33 @@ classdef Network < agents.base.SimpleAgent;
 		end
 		
 		function addRoad(obj, from, to, speedLimit)
+            % Make sure we're not doubling up on roads
+            fromName = ['n', num2str(from.id)];
+            toName = ['n', num2str(to.id)];
+            if ~isfield(obj.connectionList, fromName)
+                obj.connectionList.(fromName) = {};
+            end
+            
+            if ~isfield(obj.connectionList, toName)
+                obj.connectionList.(toName) = {};
+            end
+            
+            if any(strmatch(toName, obj.connectionList.(fromName)))
+                disp('Road already exists')
+                return;
+            end
+            
+            % Otherwise, road does not exist, make it
 			obj.addRoadOneWay(from, to, speedLimit);
 			obj.addRoadOneWay(to, from, speedLimit);
+            obj.connectionList.(fromName){end + 1} = toName;
+            obj.connectionList.(toName){end + 1} = fromName;
 		end
 		
 		function addRoadOneWay(obj, from, to, speedLimit)
 			dx = to.location.x - from.location.x;
 			dy = to.location.y - from.location.y;
-			gx = 0.01;
+			gx = 0.0025;
 			angle = atan2(dy, dx);
 			distance = norm([dx, dy]);
 			numElements = ceil(distance / obj.maxElementLength);
@@ -255,7 +285,9 @@ classdef Network < agents.base.SimpleAgent;
 		
 		function [mov] = animate(obj, startTime, endTime, dt)
 			% Animate the traffic over the grid
-			figHandle = obj.plot; %#ok
+			figHandle = obj.plot; 
+            pos = figHandle.Position .* [0 0 2 2];
+            set(figHandle, 'Position', pos);
 			%figure;
 			hold on;
 			
@@ -295,6 +327,43 @@ classdef Network < agents.base.SimpleAgent;
 				for i = 1:numel(intHandles)
 					delete(intHandles{i});
 				end
+				
+				time = time + dt;
+			end
+			
+        end
+        
+        function [mov] = animateDensity(obj, startTime, endTime, dt)
+			% Animate the traffic over the grid
+			figHandle = figure(); %obj.plot; 
+            figHandle.Position = [0 0 1120 840];
+            set(gca, 'Color', [0.7 0.7 0.7])
+            axis equal;
+			%figure;
+			hold on;
+			
+			mov = struct('cdata',[],'colormap',[]);
+			iter = 0;
+			
+			time = startTime;
+			% Find the maximum density of all road instances
+            maxDensity = 0;
+            for i = 1:numel(obj.roads)
+                obj.roads{i}.myHandle = [];
+                if (obj.roads{i}.getLength > 0.0105)
+                    maxDensity = max(maxDensity, max(obj.roads{i}.densityHistory));
+                end
+            end
+			while (time <= endTime)
+				iter = iter + 1;
+				disp(time);
+				% Plot all roads at current time
+				handles = {};
+				for i = 1:numel(obj.roads)
+					handles{end + 1} = obj.roads{i}.plotAtTime(time, maxDensity);
+                end
+				
+				mov(iter) = getframe;
 				
 				time = time + dt;
 			end

@@ -61,7 +61,7 @@ classdef Garage < agents.roads.Element
 			
 			% Plot the garge
 			spec = ['*', color];
-			garageHandle = plot(obj.location.x, obj.location.y, spec); 
+			garageHandle = plot(obj.location.x, obj.location.y, spec, 'MarkerSize', 1); 
 			
 			% Plot the connection from the garage to the connector
 			x = [obj.location.x, obj.connector.location.x];
