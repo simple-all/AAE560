@@ -134,7 +134,7 @@ classdef Network < agents.base.SimpleAgent;
 			
 		end
 		
-		function [pathIdList, cost] = findPath(obj, from, to, showPlot)
+		function [pathIdList, cost] = findPath(obj, from, to, showPlot, varargin)
 			if (nargin < 4)
 				showPlot = 0;
 			end
@@ -233,6 +233,124 @@ classdef Network < agents.base.SimpleAgent;
 			pathIdList = to.id;
 			pathIdList(end + 1) = path(to.id);
 			while (pathIdList(end) ~= from.id)
+				pathIdList(end + 1) = path(pathIdList(end));
+			end
+			pathIdList = flip(pathIdList);
+        end
+        
+        function [pathIdList, cost] = findPathDensity(obj, from, to, showPlot, networkId)
+			if (nargin < 4)
+				showPlot = 0;
+			end
+			% Djikstra algorithm for finding the shortest path between two
+			% connectors
+			if showPlot
+				figure;
+				hold on;
+				from.plot('g');
+				to.plot('r');
+				axis equal;
+			end
+			q = util.PQ2(1);
+			path = containers.Map('KeyType', 'int32', 'ValueType', 'int32');
+			visitedList = [];
+			
+			% Reset all costs
+			for i = 1:numel(obj.roads)
+				obj.roads{i}.cost = inf;
+			end
+			
+			for i = 1:numel(obj.intersections);
+				obj.intersections{i}.cost = inf;
+			end
+			
+			currAgent = from; % Starting point
+			currAgent.cost = 0;
+			while (currAgent.id ~= to.id)
+				visitedList(end + 1) = currAgent.id;
+				if showPlot && (from.id ~= currAgent.id)
+					currAgent.plot();
+					drawnow();
+				end
+				% Push connections to the stack with their cost
+				switch class(currAgent)
+					case 'agents.roads.RoadElement'
+						nextList = currAgent.to.getConnections(currAgent);
+					case 'agents.roads.Intersection'
+						nextList = currAgent.getConnections();
+					case 'agents.roads.Garage'
+						nextList = currAgent.connector.getConnections(currAgent);
+				end
+				
+				for i = 1:numel(nextList)
+					next = nextList{i};
+
+					
+					% Allow next destinations be either roads or
+					% destination
+					switch class(next)
+						case 'agents.roads.RoadElement'
+							costMod = 0;
+							if isa(currAgent, 'agents.roads.RoadElement')
+                                dx = currAgent.to.location.x - currAgent.from.location.x;
+                                dy = currAgent.to.location.y - currAgent.from.location.y;
+                                currVect = [dx, dy];
+                                
+                                dx = next.to.location.x - next.from.location.x;
+                                dy = next.to.location.y - next.from.location.y;
+                                nextVect = [dx, dy];
+                                if all(currVect == -nextVect)
+                                    costMod = 1; % Making u-turn, 1 second debit
+                                end
+                                
+                                % Look at all cars sharing the same network ID
+                                % to get this network's road density
+                                numCars = 0;
+                                for j = 1:numel(currAgent.vehicles)
+                                    vehicle = obj.instance.getCallee(currAgent.vehicles(j));
+                                    if (vehicle.networkId == networkId)
+                                        numCars = numCars + 1;
+                                    end
+                                end
+                                % Artificially limit the number of counted cars to 10
+                                numCars = min(10, numCars);
+                                costMod = costMod + (numCars * 5); % Assume each car is 5 seconds extra travel time
+                            end
+                            
+                            
+							possibleCost = currAgent.cost + (next.getLength() / next.speedLimit) + costMod; % Time to traverse, in seconds
+							if (possibleCost < next.cost)
+								next.cost = possibleCost; % Only set new cost if it is lower
+								path(next.id) = currAgent.id;
+							end
+							
+							% Only add if not visited
+							if ~any(visitedList == next.id);
+								q.push(next, next.cost);
+							end
+						otherwise
+							path(next.id) = currAgent.id;
+							next.cost = currAgent.cost;
+							if ~any(visitedList == next.id);
+								q.push(next, next.cost);
+							end
+					end
+					
+				end
+				cost = currAgent.cost;
+				% Select the next element and push the current agent to the
+				% path stack
+				flag = true;
+				while flag
+					currAgent = q.pop();
+					flag = any(visitedList == currAgent.id);
+				end
+			end
+			
+			% Return the id list of the path
+			pathIdList = to.id;
+			%pathIdList(end + 1) = path(to.id);
+			while (pathIdList(end) ~= from.id) && (numel(pathIdList) <= (numel(obj.roads) * 2))
 				pathIdList(end + 1) = path(pathIdList(end));
 			end
 			pathIdList = flip(pathIdList);

@@ -27,6 +27,7 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 		travelTime;
 		travelTimeIndex;
 		idealTime;
+        networkId;
 	end
 	
 	properties (Access = private)
@@ -35,11 +36,12 @@ classdef Vehicle < agents.base.SimpleAgent & agents.base.Periodic
 	end
 	
 	methods
-		function obj = Vehicle(maxSpeed, startTime)
+		function obj = Vehicle(maxSpeed, startTime, networkId)
 			obj.maxSpeed = maxSpeed / 60 / 60; % Miles per second
 			obj.setTimeStep(obj.runPeriod);
 			obj.startTime = startTime;
 			obj.movementLastUpdateTime = startTime;
+            obj.networkId = networkId;
 			
 			cVals = [1 0 0; 1 1 0; 0 1 0];
 			c_HSV = rgb2hsv(cVals);

@@ -1,0 +1,22 @@
+classdef VehicleGenerator < agents.base.SimpleAgent
+    %VEHICLEGENERATOR Summary of this class goes here
+    %   Detailed explanation goes here
+    
+    properties
+        startTimes = [];
+        pathFunc;
+    end
+    
+    methods
+        function obj = VehicleGenerator(obj, startTime, endTime, numVehicles, pathFunc)
+            startTimes = randi((endTime - startTime), 1, numVehicles) + startTime; % List of start times for the vehicles to generate
+            obj.pathFunc = pathFunc;
+            % Find all unique start tines
+            times = unique(startTimes);
+            for i = 1:numel(times);
+                obj.scheduleAtT
+        end
+    end
+    
+end
+

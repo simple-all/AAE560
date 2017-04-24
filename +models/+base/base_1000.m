@@ -1,4 +1,4 @@
-function expNum = base_1000(logPath, expNum)
+function data = base_1000(logPath, expNum)
 
 % Set the random seed
 rng(expNum);
@@ -39,27 +39,31 @@ end
 simInst.runSim(endTime); % Simulate
 
 % Save workspace
-path = mfilename('fullpath');
-path = path(1:(numel(path) - numel(mfilename)));
-save([path, 'results-', num2str(expNum)]);
+% path = mfilename('fullpath');
+% path = path(1:(numel(path) - numel(mfilename)));
+% disp(path);
+% save([path, 'results-', num2str(expNum)]);
 
 % Animate the scenario, save to movie
-mov = trafficGrid.animate(0, endTime, 1);
-clearvars -except mov expNum path startTime endTime trafficGrid
-vid = VideoWriter([path, 'results-', num2str(expNum), '.mp4'], 'MPEG-4');
-vid.Quality = 100;
-vid.FrameRate = 30;
-open(vid);
-writeVideo(vid, mov);
-close(vid);
+%data.mov1 = trafficGrid.animate(0, endTime, 1);
+% clearvars -except mov expNum path startTime endTime trafficGrid
+% vid = VideoWriter([path, 'results-', num2str(expNum), '.mp4'], 'MPEG-4');
+% vid.Quality = 100;
+% vid.FrameRate = 30;
+% open(vid);
+% writeVideo(vid, mov);
+% close(vid);
 
 % Animate the scenario density, save to movie
-clearvars -except expNum path startTime endTime trafficGrid
-mov = trafficGrid.animateDensity(0, endTime, 1);
-vid = VideoWriter([path, 'results-density-', num2str(expNum), '.mp4'], 'MPEG-4');
-vid.Quality = 100;
-vid.FrameRate = 30;
-open(vid);
-writeVideo(vid, mov);
-close(vid);
+%clearvars -except expNum path startTime endTime trafficGrid
+%data.mov2 = trafficGrid.animateDensity(0, endTime, 1);
+% vid = VideoWriter([path, 'results-density-', num2str(expNum), '.mp4'], 'MPEG-4');
+% vid.Quality = 100;
+% vid.FrameRate = 30;
+% open(vid);
+% writeVideo(vid, mov);
+% close(vid);
+
+data.trafficGrid = trafficGrid;
+data.allVehicles = allVehicles;
 end

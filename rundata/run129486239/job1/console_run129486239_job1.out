@@ -1,0 +1,68 @@
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2016 The MathWorks, Inc.
+                   R2016b (9.1.0.441655) 64-bit (glnxa64)
+                             September 7, 2016
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+>> models.base.base_1000('/tmp/log_run129486239_job1/',1)
+Adding vehicle 1
+Adding vehicle 2
+Adding vehicle 3
+Adding vehicle 4
+Adding vehicle 5
+Adding vehicle 6
+Adding vehicle 7
+Adding vehicle 8
+Adding vehicle 9
+Adding vehicle 10
+INFO: Time = 0.0
+INFO: Time = 10.0
+     0
+
+     1
+
+     2
+
+     3
+
+     4
+
+     5
+
+     6
+
+     7
+
+     8
+
+     9
+
+    10
+
+     0
+
+     1
+
+     2
+
+     3
+
+     4
+
+     5
+
+     6
+
+     7
+
+     8
+
+     9
+
+    10
+
+>> >> 

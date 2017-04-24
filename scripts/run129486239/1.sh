@@ -1,13 +1,13 @@
 #!/bin/bash
-#PBS -o 'C:\Users\tsatter\Documents\GitHub\AAE560/rundata/run129486239/job1/qsub.out'
-#PBS -e 'C:\Users\tsatter\Documents\GitHub\AAE560/rundata/run129486239/job1/qsub.err'
-cd C:\Users\tsatter\Documents\GitHub\AAE560
-mkdir -p C:\Users\tsatter\Documents\GitHub\AAE560/rundata/run129486239/job1
+#PBS -o '/home/tsatter/AAE560/rundata/run129486239/job1/qsub.out'
+#PBS -e '/home/tsatter/AAE560/rundata/run129486239/job1/qsub.err'
+cd /home/tsatter/AAE560
+mkdir -p /home/tsatter/AAE560/rundata/run129486239/job1
 mkdir -p /tmp/log_run129486239_job1/
 matlab -nodisplay -nosplash -nodesktop > /tmp/console_run129486239_job1.out 2>&1 << EOF
-util.QsubModel.exec_run('C:\Users\tsatter\Documents\GitHub\AAE560/rundata/run129486239/job1/run129486239_job1.mat','models.base.base_1000(''/tmp/log_run129486239_job1/'',1)');
+util.QsubModel.exec_run('/home/tsatter/AAE560/rundata/run129486239/job1/run129486239_job1.mat','models.base.base_1000(''/tmp/log_run129486239_job1/'',1)');
 dbstack
 exit
 EOF
 gzip /tmp/console_run129486239_job1.out
- mv /tmp/console_run129486239_job1.out.gz C:\Users\tsatter\Documents\GitHub\AAE560/rundata/run129486239/job1
+ mv /tmp/console_run129486239_job1.out.gz /home/tsatter/AAE560/rundata/run129486239/job1
