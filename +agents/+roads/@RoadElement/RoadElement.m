@@ -11,13 +11,10 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
 		% Speed
 		speedLimit; 
 		
-		overallAngle;
-<<<<<<< HEAD
-         density;
-         traveltimeindex;
-         bufferindex
-=======
+        overallAngle;
         density;
+        traveltimeindex;
+        bufferindex
         
         timeHistory = [];
         densityHistory = [];
@@ -25,8 +22,7 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
         % Plotting
         cMap;
         myHandle;
->>>>>>> origin/master
-	end
+    end
 	
 	methods
 		
@@ -108,9 +104,6 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
                 obj.log(time);
             end
         end
-<<<<<<< HEAD
- 
-=======
         
         function log(obj, time)
             obj.timeHistory(end + 1) = time;
@@ -133,12 +126,8 @@ classdef RoadElement < agents.base.Periodic & agents.roads.Element
             end
             handle = obj.myHandle;
 		end
-        
->>>>>>> origin/master
-            
-    end
-    
-        
+                    
+    end 
 	
 end
 
